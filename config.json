@@ -1,0 +1,13 @@
+{
+    "BINANCE_API_KEY": "",
+    "BINANCE_API_SECRET": "",
+    "VALOR_MIN_PADRAO_COMPRA": 10,
+    "SYMBOL_TO_CHECK": "USDT",
+    "MINIMUM_BALANCE": 10.0,
+    "MIN_MFI": 5,
+    "MAX_MFI": 30,
+    "filenamelog": "megatron.log",
+    "level_log": "INFO",
+    "porcentagem_valorizacao":2.6,
+    "num_linhas_para_manter":400
+  }
