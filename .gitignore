@@ -36,3 +36,5 @@ build/
 /ta-lib
 /db
 /__pycache__
+config.json
+megatron.log
