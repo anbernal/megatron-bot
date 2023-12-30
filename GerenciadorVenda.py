@@ -44,7 +44,7 @@ class GerenciadorVenda:
             if valorizacao >= porcentagem_valorizacao:
                 self.realizar_venda(compra_id, simbolo_moeda,valor_atual)
             else:
-                logging.info(f'A {simbolo_moeda} está abaixo do lucro esperado - LUCRO { round(valorizacao,2)}%.')
+                self.atualizar_valorizacao_no_banco(compra_id,valorizacao,simbolo_moeda)
 
 
 
@@ -67,6 +67,17 @@ class GerenciadorVenda:
         
         vendedorBinance = BinanceVenda(self.binance_api_key,self.binance_api_secret,self.config_file_path, self.conn)
         vendedorBinance.realizar_venda(compra_id, simbolo_moeda,valor_atual)
+
+    def atualizar_valorizacao_no_banco(self, compra_id, valorizacao, simbolo_moeda):
+        try:
+            cursor = self.conn.cursor()
+
+            cursor.execute("UPDATE compras SET atual_valorizacao = ? WHERE id = ?", (round(valorizacao, 2), compra_id))
+            self.conn.commit()
+
+            logging.info(f'Valorização atualizada no banco para a compra {simbolo_moeda} - LUCRO {round(valorizacao, 2)}%.')
+        except Exception as e:
+            logging.error(f"Erro ao atualizar valorização no banco de dados: {str(e)}")
 
     def fechar_conexao(self):
         self.conn.close()
