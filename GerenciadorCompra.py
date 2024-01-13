@@ -40,30 +40,33 @@ class GerenciadorCompra:
         binance_analyzer = BinanceMFIAnalyzer(self.config_file_path)
 
         while True:
-            moedas = gerenciador.listar_moedas()
+            try:
+                moedas = gerenciador.listar_moedas()
 
-            if moedas:
-                for nome_moeda, mfi_value,historico_valorizacao in moedas:
-                    if mfi_value is not None:
-                        #logging.info(f'O MFI para {nome_moeda} -> : {round(mfi_value, 2)}')
-                        if binance_analyzer.verificaEntreValores(mfi_value, minMFI, maxMFI,max_mfi_historico,historico_valorizacao,min_historico_val,max_historico_val):
-                            logging.info(f'A criptomoeda {nome_moeda} está no processo de compra.\n')
-                            account_balances = binance_balance.get_balance()
-                            balance = check_balance_min(account_balances, symbol_to_check, minimum_balance)
+                if moedas:
+                    for nome_moeda, mfi_value, historico_valorizacao in moedas:
+                        if mfi_value is not None:
+                            #logging.info(f'O MFI para {nome_moeda} -> : {round(mfi_value, 2)}')
+                            if binance_analyzer.verificaEntreValores(mfi_value, minMFI, maxMFI,max_mfi_historico,historico_valorizacao,min_historico_val,max_historico_val):
+                                logging.info(f'A criptomoeda {nome_moeda} está no processo de compra.\n')
+                                account_balances = binance_balance.get_balance()
+                                balance = check_balance_min(account_balances, symbol_to_check, minimum_balance)
 
-                            if balance >= minimum_balance:
-                                compradorBinance.comprar(nome_moeda, valorPadraoCompra)
-                                # logging.info(f"O saldo é  {balance}.\n")
-                            else:
-                                logging.info(f"O saldo é inferior a $ {minimum_balance} o saldo atual é:{balance}.\n")
+                                if balance >= minimum_balance:
+                                    compradorBinance.comprar(nome_moeda, valorPadraoCompra)
+                                    # logging.info(f"O saldo é  {balance}.\n")
+                                else:
+                                    logging.info(f"O saldo é inferior a $ {minimum_balance} o saldo atual é:{balance}.\n")
 
-                        #else:
-                            #logging.info(f'O MFI para {nome_moeda} não está dentro do intervalo estabelecido.')
-                    else:
-                        logging.warning(f'O MFI para {nome_moeda} é nulo. Verifique os dados.')
+                            #else:
+                                #logging.info(f'O MFI para {nome_moeda} não está dentro do intervalo estabelecido.')
+                        else:
+                            logging.warning(f'O MFI para {nome_moeda} é nulo. Verifique os dados.')
 
-                logging.info("Concluído .....\n")
-            else:
-                logging.info("Nenhuma criptomoeda cadastrada.")
+                    logging.info("Concluído .....\n")
+                else:
+                    logging.info("Nenhuma criptomoeda cadastrada.")
 
-            time.sleep(30)
+                time.sleep(30)
+            except Exception as e_outer:
+                logging.error(f"Erro durante a execução do loop principal GerenciadorCompra : {e_outer}")

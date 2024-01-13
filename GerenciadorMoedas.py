@@ -7,7 +7,7 @@ class GerenciadorMoedas:
 
     def listar_moedas(self):
         try:
-            self.cursor.execute("SELECT nome_moeda, mfi_atual,historico_valorizacao FROM moeda")
+            self.cursor.execute("SELECT nome_moeda, mfi_atual,historico_valorizacao FROM moeda order by historico_valorizacao")
             moedas = self.cursor.fetchall()
             return [(moeda[0], moeda[1],moeda[2]) for moeda in moedas]
         except sqlite3.Error as e:
