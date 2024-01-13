@@ -7,9 +7,9 @@ class GerenciadorMoedas:
 
     def listar_moedas(self):
         try:
-            self.cursor.execute("SELECT nome_moeda,mfi_atual FROM moeda")
+            self.cursor.execute("SELECT nome_moeda, mfi_atual,historico_valorizacao FROM moeda")
             moedas = self.cursor.fetchall()
-            return [(moeda[0], moeda[1]) for moeda in moedas]
+            return [(moeda[0], moeda[1],moeda[2]) for moeda in moedas]
         except sqlite3.Error as e:
             print(f"Erro ao listar criptomoedas: {e}")
             return []
@@ -30,6 +30,14 @@ class GerenciadorMoedas:
             #print(f"MFI atualizado para a moeda {nome_moeda}: {novo_mfi}")
         except sqlite3.Error as e:
             print(f"Erro ao atualizar MFI para a moeda {nome_moeda}: {e}")
+
+    def atualizar_historico_valorizacao(self, nome_moeda, historico_valorizacao):
+        try:
+            self.cursor.execute("UPDATE moeda SET historico_valorizacao = ? WHERE nome_moeda = ?", (historico_valorizacao, nome_moeda))
+            self.conn.commit()
+            #print(f"Histórico de valorização atualizado para a moeda {nome_moeda}: {historico_valorizacao}")
+        except sqlite3.Error as e:
+            print(f"Erro ao atualizar histórico de valorização para a moeda {nome_moeda}: {e}")
 
 
     def fechar_conexao(self):

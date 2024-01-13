@@ -38,11 +38,14 @@ class BinanceMFIAnalyzer:
             return True
         return False
 
-    def verificaEntreValores(self, mfi_value, min_mfi, max_mfi):
+    def verificaEntreValores(self, mfi_value, min_mfi, max_mfi, max_mfi_historico, historico_valorizao, min_historico_val, max_historico_val):
         if min_mfi <= mfi_value <= max_mfi:
+            return True
+        elif min_mfi <= mfi_value <= max_mfi_historico and historico_valorizao is not None and min_historico_val is not None and max_historico_val is not None and min_historico_val >= historico_valorizao >= max_historico_val:
             return True
         else:
             return False
+            
 
     def atualiza_mfi_moedas(self):
         DATABASE_ADDRESS = "db/megatron.db"

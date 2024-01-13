@@ -49,6 +49,7 @@ class BinanceCompra:
                                 VALUES (?, ?, ?, ?, ?)''', (moeda_id[0], data_compra, quantidade_moedas, preco_atual, status_compra))
                 self.conn.commit()
                 logging.info(f'ALERTA A {nome_moeda} comprada com sucesso! ;)  { retornoCompra}')
+ 
                 return
             else:
                 logging.info(f'A {nome_moeda} não foi comprada já consta na carteira!')

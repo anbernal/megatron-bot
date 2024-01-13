@@ -25,6 +25,11 @@ class GerenciadorCompra:
         minMFI = config_data['MIN_MFI']
         maxMFI = config_data['MAX_MFI']
 
+        max_mfi_historico = config_data['MAX_MFI_HISTORICO']
+        min_historico_val = config_data['MAX_HISTORICO']
+        max_historico_val = config_data['MIN_HISTORICO']
+
+
         # Configurar o logger com base nas configurações do JSON
         logging.basicConfig(filename=config_data['filenamelog'], level=getattr(logging, config_data['level_log']), format='%(asctime)s - %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
 
@@ -38,10 +43,10 @@ class GerenciadorCompra:
             moedas = gerenciador.listar_moedas()
 
             if moedas:
-                for nome_moeda, mfi_value in moedas:
+                for nome_moeda, mfi_value,historico_valorizacao in moedas:
                     if mfi_value is not None:
                         #logging.info(f'O MFI para {nome_moeda} -> : {round(mfi_value, 2)}')
-                        if binance_analyzer.verificaEntreValores(mfi_value, minMFI, maxMFI):
+                        if binance_analyzer.verificaEntreValores(mfi_value, minMFI, maxMFI,max_mfi_historico,historico_valorizacao,min_historico_val,max_historico_val):
                             logging.info(f'A criptomoeda {nome_moeda} está no processo de compra.\n')
                             account_balances = binance_balance.get_balance()
                             balance = check_balance_min(account_balances, symbol_to_check, minimum_balance)
