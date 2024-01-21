@@ -36,7 +36,7 @@ def thread_historico_valorizacao():
     while True:
         historico_valotizao = HistoricoValorizacao( 'config.json')
         historico_valotizao.gerar_historico_valorizacao()
-        time.sleep(12 * 60 * 60)
+        time.sleep(3600)
 
 
 if __name__ == "__main__":
