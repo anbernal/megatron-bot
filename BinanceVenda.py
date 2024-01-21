@@ -5,6 +5,8 @@ import sqlite3
 from binance.client import Client
 import requests
 
+from BotTelegram import BotTelegram
+
 class BinanceVenda:
     def __init__(self, api_key, api_secret, config_file_path, conn):
         self.binance_client = Client(api_key, api_secret)
@@ -37,7 +39,9 @@ class BinanceVenda:
     def realizar_venda(self, compra_id, simbolo_moeda, valor_atual):
         with open(self.config_file_path, 'r') as config_file:
             config_data = json.load(config_file)
-            
+        
+        chat_id = config_data['GRUPO_COMPRA_VENDA']
+
         # Configurar o logger com base nas configurações do JSON
         logging.basicConfig(filename=config_data['filenamelog'], level=getattr(logging, config_data['level_log']), format='%(asctime)s - %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
         
@@ -59,6 +63,7 @@ class BinanceVenda:
             if saldo_moeda > step_size:
                 # Ajuste a quantidade para ser um múltiplo do step size
                 quantidade_ajustada = int(saldo_moeda / step_size) * step_size
+                parse_mode='markdown'
 
                 venda = self.binance_client.create_order(
                     symbol=simbolo_moeda,
@@ -70,6 +75,9 @@ class BinanceVenda:
                 # Atualize o status da compra para 'closed' no banco de dados
                 self.atualizar_compra(compra_id, valor_atual)
 
+                mensagem = (f"\n\n   💶💷 *ALERTA VENDA* 💰💰   \n\n Moeda: {simbolo_moeda}\n Detalhes.:\n {venda}%\n\n")
+                botTelegran = BotTelegram('config.json')
+                botTelegran.enviar_mensagem(chat_id,mensagem,parse_mode)
                 logging.info(f"Venda realizada com sucesso: {simbolo_moeda} \n {venda} \n")
 
             else:

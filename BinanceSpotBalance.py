@@ -35,6 +35,11 @@ class BinanceSpotBalance:
         query_string = '&'.join([f"{k}={v}" for k, v in params.items()])
         signature = hmac.new(self.api_secret.encode('utf-8'), query_string.encode('utf-8'), hashlib.sha256).hexdigest()
         return signature
+    
+    def check_balance_usdt(self, balances):
+        for item in balances:
+            if item['asset'] == 'USDT':
+                return float(item['free'])
 
 def check_balance_min(balances, symbol, value):
     for item in balances:
@@ -45,3 +50,5 @@ def check_balance_min(balances, symbol, value):
             else:
                 return 0.0
     return 0.0
+
+

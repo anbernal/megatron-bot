@@ -5,6 +5,8 @@ from binance.client import Client
 from binance.exceptions import BinanceAPIException
 from datetime import datetime
 
+from BotTelegram import BotTelegram
+
 class BinanceCompra:
     def __init__(self, api_key, api_secret, database_name, config_file_path):
         self.client = Client(api_key, api_secret)
@@ -15,12 +17,15 @@ class BinanceCompra:
     def comprar(self, nome_moeda, valor_dolares):
         with open(self.config_file_path, 'r') as config_file:
             config_data = json.load(config_file)
+        
+        chat_id = config_data['GRUPO_COMPRA_VENDA']
 
         # Configurar o logger com base nas configurações do JSON
         logging.basicConfig(filename=config_data['filenamelog'], level=getattr(logging, config_data['level_log']),
                             format='%(asctime)s - %(message)s', datefmt='%d-%m-%Y %H:%M:%S')  # %d/%m/%Y %H:%M:%S
 
         data_compra = datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+        parse_mode='markdown'
 
         try:
             # Recuperado banco de dados o id da moeda
@@ -48,6 +53,11 @@ class BinanceCompra:
                 self.c.execute('''INSERT INTO compras (id_moeda, data_compra, quantidade, valor_compra, status)
                                 VALUES (?, ?, ?, ?, ?)''', (moeda_id[0], data_compra, quantidade_moedas, preco_atual, status_compra))
                 self.conn.commit()
+                
+                mensagem = (f"\n\n   🚨 *ALERTA COMPRA* 🚨   \n\n Moeda: {nome_moeda}\n Detalhes.:\n {retornoCompra}%\n\n")
+                botTelegran = BotTelegram('config.json')
+                botTelegran.enviar_mensagem(chat_id,mensagem,parse_mode)
+                
                 logging.info(f'ALERTA A {nome_moeda} comprada com sucesso! ;)  { retornoCompra}')
  
                 return
