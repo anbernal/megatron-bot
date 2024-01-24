@@ -75,7 +75,7 @@ class BinanceVenda:
                 # Atualize o status da compra para 'closed' no banco de dados
                 self.atualizar_compra(compra_id, valor_atual)
 
-                mensagem = (f"\n\n   💶💷 *ALERTA VENDA* 💰💰   \n\n Moeda: {simbolo_moeda}\n Detalhes.:\n {venda}%\n\n")
+                mensagem = (f"\n\n   💶💷 *ALERTA VENDA* 💰💰   \n\n Moeda: {simbolo_moeda}\n\n")
                 botTelegran = BotTelegram('config.json')
                 botTelegran.enviar_mensagem(chat_id,mensagem,parse_mode)
                 logging.info(f"Venda realizada com sucesso: {simbolo_moeda} \n {venda} \n")

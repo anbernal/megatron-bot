@@ -54,7 +54,7 @@ class BinanceCompra:
                                 VALUES (?, ?, ?, ?, ?)''', (moeda_id[0], data_compra, quantidade_moedas, preco_atual, status_compra))
                 self.conn.commit()
                 
-                mensagem = (f"\n\n   🚨 *ALERTA COMPRA* 🚨   \n\n Moeda: {nome_moeda}\n Detalhes.:\n {retornoCompra}%\n\n")
+                mensagem = (f"\n\n   🚨 *ALERTA COMPRA* 🚨   \n\n Moeda: {nome_moeda}\n\n")
                 botTelegran = BotTelegram('config.json')
                 botTelegran.enviar_mensagem(chat_id,mensagem,parse_mode)
                 
