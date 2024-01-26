@@ -64,7 +64,10 @@ class BinanceVenda:
                 # Ajuste a quantidade para ser um múltiplo do step size
                 quantidade_ajustada = int(saldo_moeda / step_size) * step_size
                 parse_mode='markdown'
-
+                if int(quantidade_ajustada) > 0:
+                # Ajuste adicional para 4 casas decimais
+                    quantidade_ajustada = round(quantidade_ajustada, 4)
+                logging.info(f"\n\nPrecisao {quantidade_ajustada} \n\n")
                 venda = self.binance_client.create_order(
                     symbol=simbolo_moeda,
                     side=Client.SIDE_SELL,
