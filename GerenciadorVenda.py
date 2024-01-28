@@ -31,17 +31,17 @@ class GerenciadorVenda:
         
         porcentagem_valorizacao = self.config_data['porcentagem_valorizacao']
         cursor = self.conn.cursor()
-        cursor.execute("SELECT id, id_moeda, quantidade, valor_compra FROM compras WHERE status = 'open'")
+        cursor.execute("SELECT id, id_moeda, permite_venda, valor_compra FROM compras WHERE status = 'open'")
         compras_abertas = cursor.fetchall()
 
         for compra in compras_abertas:
-            compra_id, moeda_id, quantidade, valor_compra = compra
+            compra_id, moeda_id, permite_venda, valor_compra = compra
             simbolo_moeda = self.obter_simbolo_moeda(moeda_id)
             valor_atual = self.obter_valor_atual(simbolo_moeda)
 
             valorizacao = ((valor_atual - valor_compra) / valor_compra) * 100
 
-            if valorizacao >= porcentagem_valorizacao:
+            if valorizacao >= porcentagem_valorizacao or (permite_venda == "S" and permite_venda is not None):
                 self.realizar_venda(compra_id, simbolo_moeda,valor_atual)
             else:
                 self.atualizar_valorizacao_no_banco(compra_id,valorizacao,simbolo_moeda)

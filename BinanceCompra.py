@@ -43,16 +43,18 @@ class BinanceCompra:
                 preco_atual = float(ticker['price'])
                 quantidade_moedas = valor_dolares / preco_atual
                 status_compra = 'open'
+                permite_venda = 'N'
+
+                self.c.execute('''INSERT INTO compras (id_moeda, data_compra, quantidade, valor_compra, status, permite_venda)
+                                VALUES (?, ?, ?, ?, ?, ?)''', (moeda_id[0], data_compra, quantidade_moedas, preco_atual, status_compra, permite_venda))
+                self.conn.commit()
+
                 retornoCompra = self.client.create_order(
                     symbol=nome_moeda,
                     side=Client.SIDE_BUY,
                     type=Client.ORDER_TYPE_MARKET,
                     quoteOrderQty=valor_dolares
                 )
-
-                self.c.execute('''INSERT INTO compras (id_moeda, data_compra, quantidade, valor_compra, status)
-                                VALUES (?, ?, ?, ?, ?)''', (moeda_id[0], data_compra, quantidade_moedas, preco_atual, status_compra))
-                self.conn.commit()
                 
                 mensagem = (f"\n\n   🚨 *ALERTA COMPRA* 🚨   \n\n Moeda: {nome_moeda}\n\n")
                 botTelegran = BotTelegram('config.json')
