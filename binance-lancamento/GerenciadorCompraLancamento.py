@@ -51,6 +51,6 @@ class GerenciadorCompraLancamento:
                 else:
                     logging.info("Nenhuma criptomoeda cadastrada.")
 
-                time.sleep(30)
+                time.sleep(1)
             except Exception as e_outer:
                 logging.error(f"Erro durante a execução do loop principal GerenciadorCompra : {e_outer}")
