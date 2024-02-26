@@ -3,10 +3,12 @@ import logging
 import sqlite3
 import requests
 from decouple import config
+from binance.client import Client
 
-from BinanceVenda import BinanceVenda
+from BinanceVendaLancamento import BinanceVendaLancamento
 
-class GerenciadorVenda:
+
+class GerenciadorVendaLancamento:
 
     def __init__(self, config_file_path):
         self.config_file_path = config_file_path
@@ -23,25 +25,38 @@ class GerenciadorVenda:
         self.binance_api_key = api_key
         self.binance_api_secret = api_secret
         self.binance_api_base_url = base_url
+        self.binance_client = Client(api_key, api_secret)
 
     def verificar_compras_abertas(self):
 
 
         logging.basicConfig(filename=self.config_data['filenamelog'], level=getattr(logging, self.config_data['level_log']), format='%(asctime)s - %(message)s', datefmt='%d/%m/%Y %H:%M:%S')
         
-        porcentagem_valorizacao = self.config_data['porcentagem_valorizacao']
         cursor = self.conn.cursor()
-        cursor.execute("SELECT id, id_moeda, quantidade, valor_compra FROM compras WHERE status = 'open'")
+        cursor.execute(""" SELECT 
+                                c.id, 
+                                c.id_moeda, 
+                                c.valor_compra, 
+                                m.desvalorizacao 
+                            FROM 
+                                compras_lancamento AS c 
+                            JOIN 
+                                moeda_lancamento AS m ON c.id_moeda = m.id 
+                            WHERE 
+                                c.status = 'open'
+                        """)
         compras_abertas = cursor.fetchall()
 
         for compra in compras_abertas:
-            compra_id, moeda_id, quantidade, valor_compra = compra
+            compra_id, moeda_id, valor_compra, desvalorizacao = compra
+            porcentagem_desvalorizacao = desvalorizacao
             simbolo_moeda = self.obter_simbolo_moeda(moeda_id)
             valor_atual = self.obter_valor_atual(simbolo_moeda)
+            maiorAlta = self.get_maior_Alta_historica(simbolo_moeda)
 
-            valorizacao = ((valor_atual - valor_compra) / valor_compra) * 100
+            valorizacao = ((valor_compra - maiorAlta) / valor_compra) * 100
 
-            if valorizacao >= porcentagem_valorizacao:
+            if valorizacao < porcentagem_desvalorizacao:
                 self.realizar_venda(compra_id, simbolo_moeda,valor_atual)
             else:
                 self.atualizar_valorizacao_no_banco(compra_id,valorizacao,simbolo_moeda)
@@ -50,7 +65,7 @@ class GerenciadorVenda:
 
     def obter_simbolo_moeda(self, moeda_id):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT nome_moeda FROM moeda WHERE id = ?", (moeda_id,))
+        cursor.execute("SELECT nome_moeda FROM moeda_lancamento WHERE id = ?", (moeda_id,))
         simbolo = cursor.fetchone()
         return simbolo[0] if simbolo else None
 
@@ -61,18 +76,31 @@ class GerenciadorVenda:
             return float(data["price"])
         else:
             raise Exception(f"Failed to fetch current value for {simbolo}")
+        
+    def get_maior_Alta_historica(self, simbolo):
+    # Obtém os dados históricos dos últimos 1000 candles (velas)
+        klines = self.binance_client.get_historical_klines(simbolo, Client.KLINE_INTERVAL_1DAY, "1000 days ago UTC")
+
+        highest_high = None
+        for kline in klines:
+            # O preço mais alto está no quarto elemento de cada kline
+            high_price = float(kline[2])
+            if highest_high is None or high_price > highest_high:
+                highest_high = high_price
+
+        return highest_high
 
     def realizar_venda(self, compra_id, simbolo_moeda,valor_atual):
         logging.basicConfig(filename=self.config_data['filenamelog'], level=getattr(logging, self.config_data['level_log']), format='%(asctime)s - %(message)s', datefmt='%d-%m-%Y %H:%M:%S')
         
-        vendedorBinance = BinanceVenda(self.binance_api_key,self.binance_api_secret,self.config_file_path, self.conn)
+        vendedorBinance = BinanceVendaLancamento(self.binance_api_key,self.binance_api_secret,self.config_file_path, self.conn)
         vendedorBinance.realizar_venda(compra_id, simbolo_moeda,valor_atual)
 
     def atualizar_valorizacao_no_banco(self, compra_id, valorizacao, simbolo_moeda):
         try:
             cursor = self.conn.cursor()
 
-            cursor.execute("UPDATE compras SET atual_valorizacao = ? WHERE id = ?", (round(valorizacao, 2), compra_id))
+            cursor.execute("UPDATE compras_lancamento SET atual_valorizacao = ? WHERE id = ?", (round(valorizacao, 2), compra_id))
             self.conn.commit()
 
             logging.info(f'Valorização atualizada no banco para a compra {simbolo_moeda} - LUCRO {round(valorizacao, 2)}%.')
