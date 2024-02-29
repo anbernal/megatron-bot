@@ -98,7 +98,7 @@ class BinanceVendaLancamento:
             data_venda = datetime.datetime.now().strftime('%d-%m-%Y %H:%M:%S') # %Y-%m-%d %H:%M:%S'
 
             # Atualize a tabela de compras com a data de venda, valor de venda e status
-            cursor.execute("UPDATE compras SET data_venda = ?, valor_venda = ?, status = 'closed' WHERE id = ?",
+            cursor.execute("UPDATE compras_lancamento SET data_venda = ?, valor_venda = ?, status = 'closed' WHERE id = ?",
                            (data_venda, valor_atual, compra_id))
 
             self.conn.commit()
