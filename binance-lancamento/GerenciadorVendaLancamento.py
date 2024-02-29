@@ -37,6 +37,7 @@ class GerenciadorVendaLancamento:
                                 c.id, 
                                 c.id_moeda, 
                                 c.valor_compra, 
+                                c.permite_venda,
                                 m.desvalorizacao 
                             FROM 
                                 compras_lancamento AS c 
@@ -48,7 +49,7 @@ class GerenciadorVendaLancamento:
         compras_abertas = cursor.fetchall()
 
         for compra in compras_abertas:
-            compra_id, moeda_id, valor_compra, desvalorizacao = compra
+            compra_id, moeda_id, valor_compra, permite_venda, desvalorizacao  = compra
             porcentagem_desvalorizacao = desvalorizacao
             simbolo_moeda = self.obter_simbolo_moeda(moeda_id)
             valor_atual = self.obter_valor_atual(simbolo_moeda)
@@ -57,7 +58,11 @@ class GerenciadorVendaLancamento:
             valorizacao = ((valor_compra - maiorAlta) / valor_compra) * 100
 
             if valorizacao < porcentagem_desvalorizacao:
-                self.realizar_venda(compra_id, simbolo_moeda,valor_atual)
+                if(permite_venda == 'S'):
+                    print("INICIANDO A VENDA ************")
+                    self.realizar_venda(compra_id, simbolo_moeda,valor_atual)
+                else:
+                    print("A PORCENTAGEM TA OK --- MAS A VENDA NAO FOI PERMITIDA ")
             else:
                 self.atualizar_valorizacao_no_banco(compra_id,valorizacao,simbolo_moeda)
 

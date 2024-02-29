@@ -39,7 +39,7 @@ class BinanceCompraLancamento:
 
                 # Verifica se já existem registros de compra para a moeda
                 self.c.execute(
-                    "SELECT COUNT(*) FROM compras_lancamento WHERE id_moeda = (SELECT id FROM moeda_lancamento WHERE nome_moeda = ?) AND status = 'open' ", (nome_moeda,))
+                    "SELECT COUNT(*) FROM compras_lancamento WHERE id_moeda = (SELECT id FROM moeda_lancamento WHERE nome_moeda = ?) AND status = 'open' or status = 'closed' ", (nome_moeda,))
                 existem_compras = self.c.fetchone()[0]
 
                 if existem_compras == 0:
@@ -47,9 +47,10 @@ class BinanceCompraLancamento:
                     preco_atual = float(ticker['price'])
                     quantidade_moedas = valor_entrada_dollar / preco_atual
                     status_compra = 'open'
+                    permite_venda = 'N'
 
-                    self.c.execute('''INSERT INTO compras_lancamento (id_moeda, data_compra, quantidade, valor_compra, status)
-                                    VALUES (?, ?, ?, ?, ?)''', (moeda_id, data_compra, quantidade_moedas, preco_atual, status_compra))
+                    self.c.execute('''INSERT INTO compras_lancamento (id_moeda, data_compra, quantidade, valor_compra, status, permite_venda)
+                                    VALUES (?, ?, ?, ?, ?, ?)''', (moeda_id, data_compra, quantidade_moedas, preco_atual, status_compra, permite_venda))
                     self.conn.commit()
 
                     retornoCompra = self.client.create_order(
